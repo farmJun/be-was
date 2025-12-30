@@ -1,13 +1,18 @@
 package webserver;
 
 import java.io.*;
+
 import java.net.Socket;
+
 import java.nio.file.Files;
+
+import model.HttpRequest;
+import model.HttpResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RequestHandler implements Runnable {
+public class  RequestHandler implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
     private static final String baseDirectory = "/Users/apple/be-was/src/main/resources/static/";
@@ -24,44 +29,26 @@ public class RequestHandler implements Runnable {
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            DataOutputStream dos = new DataOutputStream(out);
 
-            String[] tokens = br.readLine().split(" ");
-            String path = tokens[1];
+            // 웹 서버 1단계 - HTTP Request 내용 출력
+            HttpRequest httpRequest = RequestParser.getHttpRequest(in);
+            logger.info(httpRequest.toString());
 
-            byte[] body = null;
-            try {
-                body = Files.readAllBytes(new File(baseDirectory + path).toPath());
-            } catch (IOException e) {
-                logger.error(e.getMessage());
-            }
-            String contentType = getContentType(path);
-            response200Header(dos, body.length, contentType);
-            responseBody(dos, body);
+            // 웹 서버 1단계 - index.html 응답
+            HttpResponse httpResponse = getHttpResponse(httpRequest);
+            ResponseWriter.write(out, httpResponse);
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent, String contentType) {
-        try {
-            dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: " + contentType + "\r\n");
-            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
-            dos.writeBytes("\r\n");
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    private void responseBody(DataOutputStream dos, byte[] body) {
-        try {
-            dos.write(body, 0, body.length);
-            dos.flush();
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+    private HttpResponse getHttpResponse(HttpRequest httpRequest) throws IOException {
+        byte[] body = Files.readAllBytes(new File(baseDirectory + httpRequest.getPath()).toPath());
+        HttpResponse httpResponse = new HttpResponse(httpRequest.getHttpVersion());
+        httpResponse.setStatus(200, "OK");
+        httpResponse.addHeader("Content-Type", getContentType(httpRequest.getPath()));
+        httpResponse.setBody(body);
+        return httpResponse;
     }
 
     private String getContentType(String path) {
@@ -80,4 +67,5 @@ public class RequestHandler implements Runnable {
         }
         return "application/octet-stream";
     }
+
 }
