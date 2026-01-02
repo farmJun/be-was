@@ -6,13 +6,15 @@ import java.net.Socket;
 
 import java.nio.file.Files;
 
+import business.Business;
+
 import model.HttpRequest;
 import model.HttpResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class  RequestHandler implements Runnable {
+public class RequestHandler implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
     private static final String baseDirectory = "/Users/apple/be-was/src/main/resources/static/";
@@ -34,8 +36,15 @@ public class  RequestHandler implements Runnable {
             HttpRequest httpRequest = RequestParser.getHttpRequest(in);
             logger.info(httpRequest.toString());
 
-            // 웹 서버 1단계 - index.html 응답
-            HttpResponse httpResponse = getHttpResponse(httpRequest);
+            if (httpRequest.isStatic()) {
+                // 웹 서버 1단계 - index.html 응답
+                HttpResponse httpResponse = getHttpResponse(httpRequest);
+                ResponseWriter.write(out, httpResponse);
+                return;
+            }
+
+            Business business = RequestRouter.getHandler(httpRequest);
+            HttpResponse httpResponse = business.action(httpRequest);
             ResponseWriter.write(out, httpResponse);
         } catch (IOException e) {
             logger.error(e.getMessage());
@@ -64,6 +73,8 @@ public class  RequestHandler implements Runnable {
             return "image/jpeg";
         } else if (path.endsWith(".svg")) {
             return "image/svg+xml";
+        } else if (path.endsWith(".ico")) {
+            return "image/vnd.microsoft.icon";
         }
         return "application/octet-stream";
     }
