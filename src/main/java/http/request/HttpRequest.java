@@ -1,37 +1,51 @@
-package model;
+package http.request;
 
 import java.util.Map;
 
 public class HttpRequest {
 
-    private final String httpMethod;
-    private final String path;
-    private final String httpVersion;
+    public static class StartLine {
+        private final String httpMethod;
+        private final String path;
+        private final String queryString;
+        private final String httpVersion;
+
+        public StartLine(String httpMethod, String path, String queryString, String httpVersion) {
+            this.httpMethod = httpMethod;
+            this.path = path;
+            this.queryString = queryString;
+            this.httpVersion = httpVersion;
+        }
+
+        public String getHttpMethod() {
+            return httpMethod;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public String getHttpVersion() {
+            return httpVersion;
+        }
+
+        public String getQueryString() {
+            return queryString;
+        }
+    }
+
+    private final StartLine startLine;
     private final Map<String, String> headers;
     private final Map<String, String> parameters;
-    private final String body;
+    private final Map<String, String> body;
     private final boolean isStatic;
 
-    public HttpRequest(String httpMethod, String path, String httpVersion, Map<String, String> headers, Map<String, String> parameters, String body, boolean isStatic) {
-        this.httpMethod = httpMethod;
-        this.path = path;
-        this.httpVersion = httpVersion;
+    public HttpRequest(StartLine startLine, Map<String, String> headers, Map<String, String> parameters, Map<String, String> body, boolean isStatic) {
+        this.startLine = startLine;
         this.headers = headers;
         this.parameters = parameters;
         this.body = body;
         this.isStatic = isStatic;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public String getHttpMethod() {
-        return httpMethod;
-    }
-
-    public String getHttpVersion() {
-        return httpVersion;
     }
 
     public boolean isStatic() {
@@ -42,13 +56,21 @@ public class HttpRequest {
         return parameters;
     }
 
+    public Map<String, String> getBody() {
+        return body;
+    }
+
+    public StartLine getStartLine() {
+        return startLine;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("HttpRequest {\n");
-        sb.append("\t").append(httpMethod).append(" ")
-                .append(path).append(" ")
-                .append(httpVersion).append("\n");
+        sb.append("\t").append(this.startLine.httpMethod).append(" ")
+                .append(this.startLine.path).append(" ")
+                .append(this.startLine.httpVersion).append("\n");
 
         if (parameters != null && !parameters.isEmpty()) {
             sb.append("\tParameters:\n");
