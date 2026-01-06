@@ -1,7 +1,7 @@
 package business;
 
-import model.HttpRequest;
-import model.HttpResponse;
+import http.request.HttpRequest;
+import http.response.HttpResponse;
 
 public interface Business {
 
