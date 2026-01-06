@@ -2,8 +2,9 @@ package business;
 
 import db.Database;
 
-import model.HttpRequest;
-import model.HttpResponse;
+import http.request.HttpRequest;
+import http.response.HttpResponse;
+
 import model.User;
 
 import java.util.Map;
@@ -11,21 +12,16 @@ import java.util.Map;
 public class UserBusiness {
 
     public HttpResponse signUp(HttpRequest httpRequest) {
-        Map<String, String> parameters = httpRequest.getParameters();
-        String userId = parameters.get("userId");
-        String name = parameters.get("name");
-        String password = parameters.get("password");
-        String email = parameters.get("email");
+        Map<String, String> body = httpRequest.getBody();
+        String userId = body.get("userId");
+        String name = body.get("name");
+        String password = body.get("password");
+        String email = body.get("email");
 
         User user = new User(userId, password, name, email);
         Database.addUser(user);
 
-        return getHttpResponse(httpRequest);
+        return HttpResponse.successWithRedirection(httpRequest, "/index.html");
     }
 
-    private HttpResponse getHttpResponse(HttpRequest httpRequest) {
-        HttpResponse httpResponse = new HttpResponse(httpRequest.getHttpVersion());
-        httpResponse.setStatus(200, "OK");
-        return httpResponse;
-    }
 }
