@@ -2,14 +2,25 @@ package business;
 
 import db.Database;
 
+import http.HttpStatus;
 import http.request.HttpRequest;
+import http.request.RequestHandler;
 import http.response.HttpResponse;
 
 import model.User;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import util.HttpUtil;
+
+import java.io.IOException;
+
 import java.util.Map;
 
 public class UserBusiness {
+
+    private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 
     public HttpResponse signUp(HttpRequest httpRequest) {
         Map<String, String> body = httpRequest.getBody();
@@ -21,7 +32,29 @@ public class UserBusiness {
         User user = new User(userId, password, name, email);
         Database.addUser(user);
 
-        return HttpResponse.successWithRedirection(httpRequest, "/index.html");
+        return HttpResponse.responseWithRedirection(httpRequest, "/index.html");
+    }
+
+    public HttpResponse login(HttpRequest httpRequest) {
+        Map<String, String> body = httpRequest.getBody();
+
+        User findUser = Database.findUserById(body.get("userId"));
+
+        try {
+            if (findUser == null) {
+                return HttpResponse.loginFail(HttpStatus.OK, httpRequest, "login/index.html");
+            }
+
+            if (!findUser.getPassword().equals(body.get("password"))) {
+                return HttpResponse.loginFail(HttpStatus.OK, httpRequest, "login/index.html");
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+
+        String sessionId = HttpUtil.generateRandomSessionId();
+        Database.addUserSession(findUser, sessionId);
+        return HttpResponse.responseWithRedirectionAndCookie(httpRequest, "/index.html", sessionId);
     }
 
 }
