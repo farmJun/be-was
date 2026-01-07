@@ -19,6 +19,11 @@ public class RequestRouter {
                 new RouteKey("POST", "/user/create"),
                 userBusiness::signUp
         );
+
+        mappings.put(
+                new RouteKey("POST", "/user/login"),
+                userBusiness::login
+        );
     }
 
     public static Business getHandler(HttpRequest request) {
