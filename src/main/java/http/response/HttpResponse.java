@@ -10,7 +10,9 @@ import util.HttpUtil;
 import java.io.File;
 import java.io.IOException;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -54,20 +56,36 @@ public class HttpResponse {
         return httpStatus;
     }
 
-    public static HttpResponse successWithStaticRequest(HttpRequest httpRequest) throws IOException {
+    public static HttpResponse responseWithStaticRequest(HttpStatus httpStatus, HttpRequest httpRequest) throws IOException {
         byte[] body = Files.readAllBytes(new File(CommonConfig.baseDirectory + httpRequest.getStartLine().getPath()).toPath());
         HttpResponse httpResponse = new HttpResponse(httpRequest.getStartLine().getHttpVersion());
-        httpResponse.setStatus(HttpStatus.OK);
+        httpResponse.setStatus(httpStatus);
         httpResponse.addHeader("Content-Type", HttpUtil.getContentType(httpRequest.getStartLine().getPath()));
         httpResponse.setBody(body);
         return httpResponse;
     }
 
-    public static HttpResponse successWithRedirection(HttpRequest httpRequest, String redirection) {
+    public static HttpResponse loginFail(HttpStatus httpStatus, HttpRequest httpRequest, String viewPath) throws IOException {
+        String html = Files.readString(
+                Path.of(CommonConfig.baseDirectory + "/login/index.html")
+        );
+
+        html = html.replace(
+                "class=\"overlay hidden\"",
+                "class=\"overlay\""
+        );
+
+        HttpResponse httpResponse = new HttpResponse(httpRequest.getStartLine().getHttpVersion());
+        httpResponse.setStatus(httpStatus);
+        httpResponse.addHeader("Content-Type", HttpUtil.getContentType(viewPath));
+        httpResponse.setBody(html.getBytes(StandardCharsets.UTF_8));
+        return httpResponse;
+    }
+
+    public static HttpResponse responseWithRedirection(HttpRequest httpRequest, String redirection) {
         HttpResponse httpResponse = new HttpResponse(httpRequest.getStartLine().getHttpVersion());
         httpResponse.setStatus(HttpStatus.FOUND);
         httpResponse.addHeader("Location", redirection);
-        httpResponse.addHeader("Set-Cookie", "sid=1231234, path=/");
         return httpResponse;
     }
 }
