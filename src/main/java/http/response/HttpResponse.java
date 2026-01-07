@@ -88,4 +88,10 @@ public class HttpResponse {
         httpResponse.addHeader("Location", redirection);
         return httpResponse;
     }
+
+    public static HttpResponse responseWithRedirectionAndCookie(HttpRequest httpRequest, String redirection, String sessionId) {
+        HttpResponse httpResponse = responseWithRedirection(httpRequest, redirection);
+        httpResponse.addHeader("Set-Cookie", String.format("sid=%s; path=/;", sessionId));
+        return httpResponse;
+    }
 }
