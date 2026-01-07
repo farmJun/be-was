@@ -2,6 +2,7 @@ package http.response;
 
 import business.Business;
 
+import http.HttpStatus;
 import http.request.RequestRouter;
 import http.request.HttpRequest;
 
@@ -15,7 +16,7 @@ public class ResponseWriter {
 
     public static void write(OutputStream out, HttpRequest httpRequest) throws IOException {
         if (httpRequest.isStatic()) {
-            HttpResponse httpResponse = HttpResponse.successWithStaticRequest(httpRequest);
+            HttpResponse httpResponse = HttpResponse.responseWithStaticRequest(HttpStatus.OK, httpRequest);
             write(out, httpResponse);
             return;
         }
