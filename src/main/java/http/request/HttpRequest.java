@@ -64,6 +64,24 @@ public class HttpRequest {
         return startLine;
     }
 
+    public String getSessionId() {
+        String cookieHeader = headers.get("Cookie");
+
+        if (cookieHeader == null || cookieHeader.isEmpty()) {
+            return null;
+        }
+
+        String[] cookies = cookieHeader.split(";");
+        for (String cookie : cookies) {
+            String[] tokens = cookie.trim().split("=", 2);
+            if (tokens.length == 2 && tokens[0].equals("sid")) {
+                return tokens[1];
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
