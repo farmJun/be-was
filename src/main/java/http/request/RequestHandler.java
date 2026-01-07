@@ -4,7 +4,11 @@ import java.io.*;
 
 import java.net.Socket;
 
+import db.Database;
+
 import http.response.ResponseWriter;
+
+import model.User;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +28,12 @@ public class RequestHandler implements Runnable {
 
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             HttpRequest httpRequest = RequestParser.getHttpRequest(in);
+            User user = Database.findUserBySessionId(httpRequest.getSessionId());
             logger.info(httpRequest.toString());
+
+            if(user != null){
+                logger.info("발견" + user);
+            }
 
             ResponseWriter.write(out, httpRequest);
         } catch (IOException e) {
