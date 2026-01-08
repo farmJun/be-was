@@ -6,6 +6,8 @@ import http.HttpStatus;
 import http.request.RequestRouter;
 import http.request.HttpRequest;
 
+import util.DhtmlUtil;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,18 +17,29 @@ import java.util.Map;
 public class ResponseWriter {
 
     public static void write(OutputStream out, HttpRequest httpRequest) throws IOException {
-        if (httpRequest.isStatic()) {
-            HttpResponse httpResponse = HttpResponse.responseWithStaticRequest(HttpStatus.OK, httpRequest);
-            write(out, httpResponse);
-            return;
-        }
-
-        Business business = RequestRouter.getHandler(httpRequest);
-        HttpResponse httpResponse = business.action(httpRequest);
-        write(out, httpResponse);
+        write(out, resolveResponse(httpRequest));
     }
 
-    public static void write(OutputStream out, HttpResponse response) throws IOException {
+    private static HttpResponse resolveResponse(HttpRequest request) throws IOException {
+        if (request.isStatic()) {
+            return handleStaticRequest(request);
+        }
+        return handleBusinessRequest(request);
+    }
+
+    private static HttpResponse handleStaticRequest(HttpRequest request) throws IOException {
+        if (DhtmlUtil.supports(request.getStartLine().getPath())) {
+            return DhtmlUtil.renderForLoginUser(request);
+        }
+        return HttpResponse.responseWithStaticRequest(HttpStatus.OK, request);
+    }
+
+    private static HttpResponse handleBusinessRequest(HttpRequest request) {
+        Business business = RequestRouter.getHandler(request);
+        return business.action(request);
+    }
+
+    private static void write(OutputStream out, HttpResponse response) throws IOException {
         DataOutputStream dataOutputStream = new DataOutputStream(out);
         writeResponseStartLine(dataOutputStream, response);
         writeResponseHeader(dataOutputStream, response);
