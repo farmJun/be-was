@@ -2,12 +2,10 @@ package http.response;
 
 import config.CommonConfig;
 
+import http.ContentType;
 import http.HttpStatus;
 import http.request.HttpRequest;
 
-import util.HttpUtil;
-
-import java.io.File;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
@@ -56,42 +54,92 @@ public class HttpResponse {
         return httpStatus;
     }
 
-    public static HttpResponse responseWithStaticRequest(HttpStatus httpStatus, HttpRequest httpRequest) throws IOException {
-        byte[] body = Files.readAllBytes(new File(CommonConfig.baseDirectory + httpRequest.getStartLine().getPath()).toPath());
-        HttpResponse httpResponse = new HttpResponse(httpRequest.getStartLine().getHttpVersion());
-        httpResponse.setStatus(httpStatus);
-        httpResponse.addHeader("Content-Type", HttpUtil.getContentType(httpRequest.getStartLine().getPath()));
-        httpResponse.setBody(body);
-        return httpResponse;
+    public static Builder builder(HttpRequest request) {
+        return new Builder(request.getStartLine().getHttpVersion());
     }
 
-    public static HttpResponse loginFail(HttpStatus httpStatus, HttpRequest httpRequest, String viewPath) throws IOException {
-        String html = Files.readString(
-                Path.of(CommonConfig.baseDirectory + "/login/index.html")
+    public static HttpResponse responseWithStaticRequest(HttpStatus status, HttpRequest request) throws IOException {
+        String path = request.getStartLine().getPath();
+        byte[] body = Files.readAllBytes(
+                Path.of(CommonConfig.baseDirectory + path)
         );
 
-        html = html.replace(
+        return HttpResponse.builder(request)
+                .status(status)
+                .contentType(ContentType.from(path))
+                .body(body)
+                .build();
+    }
+
+    public static HttpResponse loginFail(HttpStatus status, HttpRequest request) throws IOException {
+
+        String html = Files.readString(
+                Path.of(CommonConfig.baseDirectory + "/login/index.html")
+        ).replace(
                 "class=\"overlay hidden\"",
                 "class=\"overlay\""
         );
 
-        HttpResponse httpResponse = new HttpResponse(httpRequest.getStartLine().getHttpVersion());
-        httpResponse.setStatus(httpStatus);
-        httpResponse.addHeader("Content-Type", HttpUtil.getContentType(viewPath));
-        httpResponse.setBody(html.getBytes(StandardCharsets.UTF_8));
-        return httpResponse;
+        return HttpResponse.builder(request)
+                .status(status)
+                .contentType(ContentType.HTML)
+                .body(html.getBytes(StandardCharsets.UTF_8))
+                .build();
     }
 
-    public static HttpResponse responseWithRedirection(HttpRequest httpRequest, String redirection) {
-        HttpResponse httpResponse = new HttpResponse(httpRequest.getStartLine().getHttpVersion());
-        httpResponse.setStatus(HttpStatus.FOUND);
-        httpResponse.addHeader("Location", redirection);
-        return httpResponse;
+    public static HttpResponse redirect(
+            HttpRequest request,
+            String location
+    ) {
+        return HttpResponse.builder(request)
+                .status(HttpStatus.FOUND)
+                .header("Location", location)
+                .build();
     }
 
-    public static HttpResponse responseWithRedirectionAndCookie(HttpRequest httpRequest, String redirection, String sessionId) {
-        HttpResponse httpResponse = responseWithRedirection(httpRequest, redirection);
-        httpResponse.addHeader("Set-Cookie", String.format("sid=%s; path=/;", sessionId));
-        return httpResponse;
+    public static HttpResponse redirectWithCookie(
+            HttpRequest request,
+            String location,
+            String sessionId
+    ) {
+        return HttpResponse.builder(request)
+                .status(HttpStatus.FOUND)
+                .header("Location", location)
+                .header("Set-Cookie", "sid=" + sessionId + "; path=/;")
+                .build();
     }
+
+    public static class Builder {
+
+        private final HttpResponse response;
+
+        private Builder(String httpVersion) {
+            this.response = new HttpResponse(httpVersion);
+        }
+
+        public Builder status(HttpStatus status) {
+            response.setStatus(status);
+            return this;
+        }
+
+        public Builder header(String key, String value) {
+            response.addHeader(key, value);
+            return this;
+        }
+
+        public Builder contentType(ContentType type) {
+            response.addHeader("Content-Type", type.getValue());
+            return this;
+        }
+
+        public Builder body(byte[] body) {
+            response.setBody(body);
+            return this;
+        }
+
+        public HttpResponse build() {
+            return response;
+        }
+    }
+
 }
