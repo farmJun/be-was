@@ -32,7 +32,7 @@ public class UserBusiness {
         User user = new User(userId, password, name, email);
         Database.addUser(user);
 
-        return HttpResponse.responseWithRedirection(httpRequest, "/index.html");
+        return HttpResponse.redirect(httpRequest, "/index.html");
     }
 
     public HttpResponse login(HttpRequest httpRequest) {
@@ -42,11 +42,11 @@ public class UserBusiness {
 
         try {
             if (findUser == null) {
-                return HttpResponse.loginFail(HttpStatus.OK, httpRequest, "login/index.html");
+                return HttpResponse.loginFail(HttpStatus.OK, httpRequest);
             }
 
             if (!findUser.getPassword().equals(body.get("password"))) {
-                return HttpResponse.loginFail(HttpStatus.OK, httpRequest, "login/index.html");
+                return HttpResponse.loginFail(HttpStatus.OK, httpRequest);
             }
         } catch (IOException e) {
             logger.error(e.getMessage());
@@ -54,7 +54,7 @@ public class UserBusiness {
 
         String sessionId = HttpUtil.generateRandomSessionId();
         Database.addUserSession(findUser, sessionId);
-        return HttpResponse.responseWithRedirectionAndCookie(httpRequest, "/index.html", sessionId);
+        return HttpResponse.redirectWithCookie(httpRequest, "/index.html", sessionId);
     }
 
 }
