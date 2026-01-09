@@ -7,6 +7,7 @@ import http.request.RequestRouter;
 import http.request.HttpRequest;
 
 import util.DhtmlUtil;
+import util.HttpUtil;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -28,6 +29,10 @@ public class ResponseWriter {
     }
 
     private static HttpResponse handleStaticRequest(HttpRequest request) throws IOException {
+        if (HttpUtil.isUnauthorized(request)) {
+            return HttpResponse.redirect(request, "/login/index.html");
+        }
+
         if (DhtmlUtil.supports(request.getStartLine().getPath())) {
             return DhtmlUtil.renderForLoginUser(request);
         }
