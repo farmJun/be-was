@@ -87,21 +87,14 @@ public class HttpResponse {
                 .build();
     }
 
-    public static HttpResponse redirect(
-            HttpRequest request,
-            String location
-    ) {
+    public static HttpResponse redirect(HttpRequest request, String location) {
         return HttpResponse.builder(request)
                 .status(HttpStatus.FOUND)
                 .header("Location", location)
                 .build();
     }
 
-    public static HttpResponse redirectWithCookie(
-            HttpRequest request,
-            String location,
-            String sessionId
-    ) {
+    public static HttpResponse redirectWithCookie(HttpRequest request, String location, String sessionId) {
         return HttpResponse.builder(request)
                 .status(HttpStatus.FOUND)
                 .header("Location", location)
