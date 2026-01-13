@@ -1,14 +1,24 @@
 package model;
 
+import http.request.HttpRequest;
+
 import java.util.Objects;
 
 public class RouteKey {
     private final String method;
     private final String path;
 
-    public RouteKey(String method, String path) {
-        this.method = method;
-        this.path = path;
+    public RouteKey(HttpRequest httpRequest) {
+        this.method = httpRequest.getStartLine().getHttpMethod();
+        this.path = httpRequest.getStartLine().getPath();
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public String getPath() {
+        return path;
     }
 
     @Override
