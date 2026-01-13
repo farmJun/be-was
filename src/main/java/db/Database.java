@@ -1,5 +1,6 @@
 package db;
 
+import model.Article;
 import model.User;
 
 import java.util.Collection;
@@ -9,6 +10,7 @@ import java.util.Map;
 public class Database {
     private static Map<String, User> users = new HashMap<>();
     private static Map<String, User> sessions = new HashMap<>();
+    private static Map<Long, Article> articles = new HashMap<>();
 
     public static void addUser(User user) {
         users.put(user.getUserId(), user);
@@ -28,5 +30,15 @@ public class Database {
 
     public static Collection<User> findAll() {
         return users.values();
+    }
+
+    public static Article findArticleById(Long articleId) {
+        return articles.get(articleId);
+    }
+
+    public static void addArticle(Article article) {
+        Long id = (long) (articles.size() + 1);
+        article.setId(id);
+        articles.put(id, article);
     }
 }
