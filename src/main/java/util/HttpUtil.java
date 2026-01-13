@@ -14,7 +14,8 @@ import java.util.Set;
 public class HttpUtil {
 
     private static final Set<String> LOGIN_REQUIRED_PATHS = Set.of(
-            "/mypage/index.html"
+            "/mypage/index.html",
+            "/article/index.html"
     );
 
     public static String generateRandomSessionId() {
