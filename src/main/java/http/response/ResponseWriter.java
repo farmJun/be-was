@@ -1,13 +1,15 @@
 package http.response;
 
-import business.Business;
-
 import http.HttpStatus;
 import http.request.RequestRouter;
 import http.request.HttpRequest;
 
+import model.RouteKey;
+import model.RouteResult;
+
 import util.DhtmlUtil;
 import util.HttpUtil;
+import util.StaticFileResolver;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -22,10 +24,22 @@ public class ResponseWriter {
     }
 
     private static HttpResponse resolveResponse(HttpRequest request) throws IOException {
-        if (request.isStatic()) {
-            return handleStaticRequest(request);
+        RouteKey routeKey = new RouteKey(request);
+        RouteResult routeResult = RequestRouter.route(routeKey);
+
+        if (routeResult.hasHandler()) {
+            return routeResult.getHandler().action(request);
         }
-        return handleBusinessRequest(request);
+
+        if (routeResult.isMethodNotAllowed()) {
+            return HttpResponse.methodNotAllowed(request, routeResult.getAllowedMethods());
+        }
+
+        if (!StaticFileResolver.exists(routeKey.getPath())) {
+            return HttpResponse.notFound(request);
+        }
+
+        return handleStaticRequest(request);
     }
 
     private static HttpResponse handleStaticRequest(HttpRequest request) throws IOException {
@@ -36,12 +50,8 @@ public class ResponseWriter {
         if (DhtmlUtil.supports(request.getStartLine().getPath())) {
             return DhtmlUtil.renderForLoginUser(request);
         }
-        return HttpResponse.responseWithStaticRequest(HttpStatus.OK, request);
-    }
 
-    private static HttpResponse handleBusinessRequest(HttpRequest request) {
-        Business business = RequestRouter.getHandler(request);
-        return business.action(request);
+        return HttpResponse.responseWithStaticRequest(HttpStatus.OK, request);
     }
 
     private static void write(OutputStream out, HttpResponse response) throws IOException {
