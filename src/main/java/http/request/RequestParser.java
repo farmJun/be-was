@@ -20,7 +20,7 @@ public class RequestParser {
         HttpRequest.StartLine startLine = parseStartLine(requestStartLine);
         Map<String, String> headers = parseHeader(bufferedReader);
         Map<String, String> parameters = parseQueryParameter(startLine);
-        int contentLength = Integer.parseInt(headers.getOrDefault("Content-Length".toLowerCase(), "0"));
+        int contentLength = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
         Map<String, String> body = parseBody(bufferedReader, startLine, contentLength);
         boolean isStatic = startLine.getPath().matches(".+\\.[a-zA-Z0-9]+$");
         return new HttpRequest(startLine, headers, parameters, body, isStatic);
