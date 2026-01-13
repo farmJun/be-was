@@ -14,6 +14,7 @@ import java.nio.file.Path;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class HttpResponse {
     private final String httpVersion;
@@ -67,6 +68,34 @@ public class HttpResponse {
         return HttpResponse.builder(request)
                 .status(status)
                 .contentType(ContentType.from(path))
+                .body(body)
+                .build();
+    }
+
+    public static HttpResponse notFound(HttpRequest request) throws IOException {
+        byte[] body = Files.readAllBytes(
+                Path.of(CommonConfig.baseDirectory + "/error/404.html")
+        );
+
+        return HttpResponse.builder(request)
+                .status(HttpStatus.NOT_FOUND)
+                .contentType(ContentType.HTML)
+                .body(body)
+                .build();
+    }
+
+    public static HttpResponse methodNotAllowed(HttpRequest request, Set<String> allowedMethods) throws IOException {
+
+        byte[] body = Files.readAllBytes(
+                Path.of(CommonConfig.baseDirectory + "/error/405.html")
+        );
+
+        String allowHeader = String.join(", ", allowedMethods);
+
+        return HttpResponse.builder(request)
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .header("Allow", allowHeader)
+                .contentType(ContentType.HTML)
                 .body(body)
                 .build();
     }
