@@ -4,7 +4,6 @@ import db.Database;
 
 import http.HttpStatus;
 import http.request.HttpRequest;
-import http.request.RequestHandler;
 import http.response.HttpResponse;
 
 import model.User;
@@ -20,7 +19,7 @@ import java.util.Map;
 
 public class UserBusiness {
 
-    private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserBusiness.class);
 
     public HttpResponse signUp(HttpRequest httpRequest) {
         Map<String, String> body = httpRequest.getBody();
