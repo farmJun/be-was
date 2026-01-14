@@ -22,8 +22,7 @@ public class RequestParser {
         Map<String, String> parameters = parseQueryParameter(startLine);
         int contentLength = Integer.parseInt(headers.getOrDefault("Content-Length", "0"));
         Map<String, String> body = parseBody(bufferedReader, startLine, contentLength);
-        boolean isStatic = startLine.getPath().matches(".+\\.[a-zA-Z0-9]+$");
-        return new HttpRequest(startLine, headers, parameters, body, isStatic);
+        return new HttpRequest(startLine, headers, parameters, body);
     }
 
     private static HttpRequest.StartLine parseStartLine(String startLine) {
@@ -54,14 +53,14 @@ public class RequestParser {
     }
 
     private static Map<String, String> parseQueryParameter(HttpRequest.StartLine startLine) {
-        if (startLine.getHttpMethod().equalsIgnoreCase("GET")) {
-            return parseStringToMap(startLine.getQueryString());
+        if (startLine.httpMethod().equalsIgnoreCase("GET")) {
+            return parseStringToMap(startLine.queryString());
         }
         return new LinkedHashMap<>();
     }
 
     private static Map<String, String> parseBody(BufferedReader bufferedReader, HttpRequest.StartLine startLine, int contentLength) throws IOException {
-        if (startLine.getHttpMethod().equalsIgnoreCase("POST")) {
+        if (startLine.httpMethod().equalsIgnoreCase("POST")) {
             if (contentLength > 0) {
                 char[] bodyChars = new char[contentLength];
                 bufferedReader.read(bodyChars, 0, contentLength);
