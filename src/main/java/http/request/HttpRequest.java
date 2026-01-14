@@ -1,5 +1,7 @@
 package http.request;
 
+import model.Image;
+
 import java.util.Map;
 
 public class HttpRequest {
@@ -10,21 +12,23 @@ public class HttpRequest {
     private final StartLine startLine;
     private final Map<String, String> headers;
     private final Map<String, String> parameters;
-    private final Map<String, String> body;
+    private final Map<String, String> form;
+    private final Image image;
 
-    public HttpRequest(StartLine startLine, Map<String, String> headers, Map<String, String> parameters, Map<String, String> body) {
+    public HttpRequest(StartLine startLine, Map<String, String> headers, Map<String, String> parameters, Map<String, String> form, Image image) {
         this.startLine = startLine;
         this.headers = headers;
         this.parameters = parameters;
-        this.body = body;
+        this.form = form;
+        this.image = image;
     }
 
     public Map<String, String> getParameters() {
         return parameters;
     }
 
-    public Map<String, String> getBody() {
-        return body;
+    public Map<String, String> getForm() {
+        return form;
     }
 
     public StartLine getStartLine() {
@@ -77,9 +81,9 @@ public class HttpRequest {
                     .append("\n");
         }
 
-        if (body != null) {
+        if (form != null) {
             sb.append("\tBody:\n");
-            sb.append("\t\t").append(body).append("\n");
+            sb.append("\t\t").append(form).append("\n");
         }
 
         sb.append("}");
