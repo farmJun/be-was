@@ -56,11 +56,11 @@ public class HttpResponse {
     }
 
     public static Builder builder(HttpRequest request) {
-        return new Builder(request.getStartLine().getHttpVersion());
+        return new Builder(request.getStartLine().httpVersion());
     }
 
     public static HttpResponse responseWithStaticRequest(HttpStatus status, HttpRequest request) throws IOException {
-        String path = request.getStartLine().getPath();
+        String path = request.getStartLine().path();
         byte[] body = Files.readAllBytes(
                 Path.of(CommonConfig.baseDirectory + path)
         );

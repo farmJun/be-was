@@ -30,7 +30,7 @@ public class HttpUtil {
     }
 
     public static boolean isUnauthorized(HttpRequest request) {
-        return isLoginRequiredPath(request.getStartLine().getPath()) && !isLoggedIn(request);
+        return isLoginRequiredPath(request.getStartLine().path()) && !isLoggedIn(request);
     }
 
     private static boolean isLoginRequiredPath(String path) {

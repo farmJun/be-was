@@ -47,7 +47,7 @@ public class ResponseWriter {
             return HttpResponse.redirect(request, "/login/index.html");
         }
 
-        if (DhtmlUtil.supports(request.getStartLine().getPath())) {
+        if (DhtmlUtil.supports(request.getStartLine().path())) {
             return DhtmlUtil.renderForLoginUser(request);
         }
 

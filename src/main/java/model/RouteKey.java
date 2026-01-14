@@ -9,8 +9,8 @@ public class RouteKey {
     private final String path;
 
     public RouteKey(HttpRequest httpRequest) {
-        this.method = httpRequest.getStartLine().getHttpMethod();
-        this.path = httpRequest.getStartLine().getPath();
+        this.method = httpRequest.getStartLine().httpMethod();
+        this.path = httpRequest.getStartLine().path();
     }
 
     public String getMethod() {
