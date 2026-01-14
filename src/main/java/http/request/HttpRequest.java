@@ -4,52 +4,19 @@ import java.util.Map;
 
 public class HttpRequest {
 
-    public static class StartLine {
-        private final String httpMethod;
-        private final String path;
-        private final String queryString;
-        private final String httpVersion;
-
-        public StartLine(String httpMethod, String path, String queryString, String httpVersion) {
-            this.httpMethod = httpMethod;
-            this.path = path;
-            this.queryString = queryString;
-            this.httpVersion = httpVersion;
-        }
-
-        public String getHttpMethod() {
-            return httpMethod;
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        public String getHttpVersion() {
-            return httpVersion;
-        }
-
-        public String getQueryString() {
-            return queryString;
-        }
+    public record StartLine(String httpMethod, String path, String queryString, String httpVersion) {
     }
 
     private final StartLine startLine;
     private final Map<String, String> headers;
     private final Map<String, String> parameters;
     private final Map<String, String> body;
-    private final boolean isStatic;
 
-    public HttpRequest(StartLine startLine, Map<String, String> headers, Map<String, String> parameters, Map<String, String> body, boolean isStatic) {
+    public HttpRequest(StartLine startLine, Map<String, String> headers, Map<String, String> parameters, Map<String, String> body) {
         this.startLine = startLine;
         this.headers = headers;
         this.parameters = parameters;
         this.body = body;
-        this.isStatic = isStatic;
-    }
-
-    public boolean isStatic() {
-        return isStatic;
     }
 
     public Map<String, String> getParameters() {
