@@ -22,7 +22,7 @@ public class UserBusiness {
     private static final Logger logger = LoggerFactory.getLogger(UserBusiness.class);
 
     public HttpResponse signUp(HttpRequest httpRequest) {
-        Map<String, String> body = httpRequest.getBody();
+        Map<String, String> body = httpRequest.getForm();
         String userId = body.get("userId");
         String name = body.get("name");
         String password = body.get("password");
@@ -35,7 +35,7 @@ public class UserBusiness {
     }
 
     public HttpResponse login(HttpRequest httpRequest) {
-        Map<String, String> body = httpRequest.getBody();
+        Map<String, String> body = httpRequest.getForm();
 
         User findUser = Database.findUserById(body.get("userId"));
 

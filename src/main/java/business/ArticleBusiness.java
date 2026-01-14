@@ -11,7 +11,7 @@ import model.User;
 public class ArticleBusiness {
 
     public HttpResponse createArticle(HttpRequest httpRequest) {
-        String content = httpRequest.getBody().get("content");
+        String content = httpRequest.getForm().get("content");
         User user = Database.findUserBySessionId(httpRequest.getSessionId());
 
         if (user == null) {
