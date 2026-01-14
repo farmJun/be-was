@@ -1,7 +1,5 @@
 package http.request;
 
-import model.Image;
-
 import java.util.Map;
 
 public class HttpRequest {
@@ -13,14 +11,14 @@ public class HttpRequest {
     private final Map<String, String> headers;
     private final Map<String, String> parameters;
     private final Map<String, String> form;
-    private final Image image;
+    private final MultiPartData multiPartData;
 
-    public HttpRequest(StartLine startLine, Map<String, String> headers, Map<String, String> parameters, Map<String, String> form, Image image) {
+    public HttpRequest(StartLine startLine, Map<String, String> headers, Map<String, String> parameters, Map<String, String> form, MultiPartData multiPartData) {
         this.startLine = startLine;
         this.headers = headers;
         this.parameters = parameters;
         this.form = form;
-        this.image = image;
+        this.multiPartData = multiPartData;
     }
 
     public Map<String, String> getParameters() {
@@ -33,6 +31,10 @@ public class HttpRequest {
 
     public StartLine getStartLine() {
         return startLine;
+    }
+
+    public MultiPartData getMultiPartData() {
+        return multiPartData;
     }
 
     public String getSessionId() {
