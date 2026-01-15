@@ -19,22 +19,19 @@ public class DhtmlUtil {
         return path.endsWith(".html") && path.equals("/index.html");
     }
 
-    public static HttpResponse renderForLoginUser(HttpRequest request) throws IOException {
-        String html = Files.readString(
-                Path.of(CommonConfig.baseDirectory + "/index.html")
-        );
-
+    public static String applyDynamicHeader(String html, HttpRequest request) {
         String headerMenu;
 
         if (HttpUtil.isLoggedIn(request)) {
             User user = Database.findUserBySessionId(request.getSessionId());
+            String username = (user != null) ? user.getName() : "Unknown";
             headerMenu = """
                         <li class="header__menu__item">
                           <a class="btn btn_ghost btn_size_s" href="/mypage/index.html">
                             %s님
                           </a>
                         </li>
-                    """.formatted(user.getName());
+                    """.formatted(username);
         } else {
             headerMenu = """
                         <li class="header__menu__item">
@@ -48,7 +45,13 @@ public class DhtmlUtil {
                     """;
         }
 
-        html = html.replace("{{HEADER_MENU}}", headerMenu);
+        return html.replace("{{HEADER_MENU}}", headerMenu);
+    }
+
+    public static HttpResponse renderForLoginUser(HttpRequest request) throws IOException {
+        String html = Files.readString(Path.of(CommonConfig.baseDirectory + "/index.html"));
+
+        html = applyDynamicHeader(html, request);
 
         return HttpResponse.builder(request)
                 .status(HttpStatus.OK)
