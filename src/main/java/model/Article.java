@@ -17,6 +17,10 @@ public class Article {
         return imagePath;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
     public String getContent() {
         return content;
     }
