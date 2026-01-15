@@ -1,21 +1,32 @@
 package business;
 
+import config.CommonConfig;
 import db.Database;
 
+import http.ContentType;
 import http.HttpStatus;
 import http.request.HttpRequest;
+import http.request.MultiPartData;
 import http.response.HttpResponse;
 
+import model.Image;
 import model.User;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import util.DhtmlUtil;
 import util.HttpUtil;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
+import java.util.UUID;
 
 public class UserBusiness {
 
@@ -56,4 +67,69 @@ public class UserBusiness {
         return HttpResponse.redirectWithCookie(httpRequest, "/index.html", sessionId);
     }
 
+    public HttpResponse getMyPage(HttpRequest request) {
+        if (!HttpUtil.isLoggedIn(request)) {
+            return HttpResponse.redirect(request, "/login/index.html");
+        }
+
+        try {
+            User user = Database.findUserBySessionId(request.getSessionId());
+            String html = Files.readString(Path.of("./src/main/resources/static/mypage/index.html")); // 경로 주의
+
+            String profileImgSrc = (user.getProfileImage() != null) ? user.getProfileImage() : "../img/basic_profileImage.svg";
+            html = html.replace("{{nickname}}", user.getName());
+            html = html.replace("{{profileImage}}", profileImgSrc);
+            html = DhtmlUtil.applyDynamicHeader(html, request);
+
+            return HttpResponse.builder(request)
+                    .status(HttpStatus.OK)
+                    .contentType(ContentType.HTML)
+                    .body(html.getBytes(StandardCharsets.UTF_8))
+                    .build();
+        } catch (IOException e) {
+            return HttpResponse.redirect(request, "/error/500.html");
+        }
+    }
+
+    public HttpResponse updateUser(HttpRequest request) {
+        if (!HttpUtil.isLoggedIn(request)) {
+            return HttpResponse.redirect(request, "/login/index.html");
+        }
+
+        try {
+            User user = Database.findUserBySessionId(request.getSessionId());
+            MultiPartData data = request.getMultiPartData();
+            String newNickname = data.getParameter("nickname");
+            String newPassword = data.getParameter("password");
+
+            if (newNickname != null && !newNickname.isEmpty()) {
+                user.setName(newNickname);
+            }
+            if (newPassword != null && !newPassword.isEmpty()) {
+                user.setPassword(newPassword);
+            }
+
+            // 2) 이미지 파일 업데이트
+            Image file = data.getFile("profileImage");
+            if (file != null && file.getFileName() != null && !file.getFileName().isEmpty()) {
+                // 저장 디렉토리 생성
+                File dir = new File(CommonConfig.UPLOAD_DIR);
+
+                // 파일 저장
+                String ext = file.getFileName().substring(file.getFileName().lastIndexOf("."));
+                String savedFileName = UUID.randomUUID() + ext;
+                File dest = new File(dir, savedFileName);
+
+                try (FileOutputStream fos = new FileOutputStream(dest)) {
+                    fos.write(file.getData());
+                }
+
+                user.setProfileImage("/asset/" + savedFileName);
+            }
+
+            return HttpResponse.redirect(request, "/mypage/index.html");
+        } catch (IOException e) {
+            return HttpResponse.redirect(request, "/error/500.html");
+        }
+    }
 }
