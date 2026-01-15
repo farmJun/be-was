@@ -21,6 +21,7 @@ public class RequestRouter {
         register("/user/create", "POST", userBusiness::signUp);
         register("/user/login", "POST", userBusiness::login);
         register("/article/create", "POST", articleBusiness::createArticle);
+        register("/index.html", "GET", articleBusiness::getArticlePage);
     }
 
     public static RouteResult route(RouteKey routeKey) {
