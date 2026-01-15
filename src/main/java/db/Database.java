@@ -41,4 +41,9 @@ public class Database {
         article.setId(id);
         articles.put(id, article);
     }
+
+    public static Article findLatest() {
+        long currentId = articles.size();
+        return currentId > 0 ? articles.get(currentId) : null;
+    }
 }
