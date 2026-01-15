@@ -6,7 +6,7 @@ import java.sql.*;
 
 public class ArticleRepository {
 
-    public void save(Article article) {
+    public Long save(Article article) {
         String sql = "INSERT INTO articles (content, imagePath, writerUserId) VALUES (?, ?, ?)";
 
         try (Connection conn = JdbcConnection.getConnection();
@@ -17,9 +17,16 @@ public class ArticleRepository {
             pstmt.setString(3, article.getUserId());
 
             pstmt.executeUpdate();
+
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return -1L;
     }
 
     public Article findLatest() {
@@ -32,9 +39,9 @@ public class ArticleRepository {
             if (rs.next()) {
                 return new Article(
                         rs.getLong("id"),
+                        rs.getString("writerUserId"),
                         rs.getString("content"),
-                        rs.getString("imagePath"),
-                        rs.getString("writerUserId")
+                        rs.getString("imagePath")
                 );
             }
         } catch (SQLException e) {
