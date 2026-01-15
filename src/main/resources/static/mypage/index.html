@@ -5,46 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link href="../reset.css" rel="stylesheet"/>
     <link href="../global.css" rel="stylesheet"/>
+    <script>
+        function triggerFileUpload() {
+            document.getElementById('profile-input').click();
+        }
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                const output = document.getElementById('current-profile-img');
+                output.src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
 </head>
 <body>
 <div class="container">
     <header class="header">
         <a href="/"><img src="../img/signiture.svg"/></a>
         <ul class="header__menu">
-            <li class="header__menu__item">
-                <a class="btn btn_contained btn_size_s" href="/article/index.html">글쓰기</a>
-            </li>
-            <li class="header__menu__item">
-                <button id="logout-btn" class="btn btn_ghost btn_size_s">
-                    로그아웃
-                </button>
-            </li>
+            {{HEADER_MENU}}
         </ul>
     </header>
     <div class="page">
         <h2 class="page-title">마이페이지</h2>
 
-        <div class="profile_container">
-            <div class="profile_box">
-                <div class="profile_image">
-                    <img class="profile"/>
-                </div>
-                <div class="profile_frame">
-                    <div class="btn_profile">
-                        <div class="btn_container">수정</div>
+        <form class="form" method="POST" action="/user/update" enctype="multipart/form-data">
+            <div class="profile_container">
+                <div class="profile_box">
+                    <div class="profile_image">
+                        <img id="current-profile-img" class="profile" src="{{profileImage}}">
                     </div>
-                    <div class="btn_bar"></div>
-                    <div class="btn_profile">
-                        <div class="btn_container">삭제</div>
+                    <div class="profile_frame">
+                        <div class="btn_profile" onclick="triggerFileUpload()">
+                            <div class="btn_container">수정</div>
+                        </div>
+                        <div class="btn_bar"></div>
+                        <div class="btn_profile">
+                            <div class="btn_container">삭제</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <form class="form">
+
+                <input type="file" id="profile-input" name="profileImage" style="display: none;"
+                       onchange="previewImage(event)" accept="image/*"/>
+
                 <div class="textfield textfield_size_s input_margin">
                     <p class="title_textfield">닉네임</p>
                     <input
                             class="input_textfield"
-                            placeholder="{회원 가입 시 입력했던 닉네임}"
+                            name="nickname"
+                            value="{{nickname}}"
+                            placeholder="변경할 닉네임을 입력하세요"
                             autocomplete="username"
                     />
                 </div>
@@ -52,30 +65,23 @@
                     <p class="title_textfield">비밀번호</p>
                     <input
                             class="input_textfield"
-                            placeholder="비밀번호를 변경할 경우 입력해주세요"
-                            autocomplete="current-password"
-                    />
-                </div>
-                <div class="textfield textfield_size_s">
-                    <p class="title_textfield">비밀번호 확인</p>
-                    <input
-                            class="input_textfield"
+                            name="password"
                             type="password"
-                            placeholder="한 번 더 입력해주세요"
-                            autocomplete="current-password"
+                            placeholder="비밀번호를 변경할 경우 입력해주세요"
+                            autocomplete="new-password"
                     />
                 </div>
+
                 <button
                         id="registration-btn"
                         class="btn btn_contained btn_size_m input_margin"
-
-                        type="button"
+                        type="submit"
                 >
                     변경사항 저장
                 </button>
-
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
+</div>
 </body>
 </html>
