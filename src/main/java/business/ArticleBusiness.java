@@ -2,8 +2,10 @@ package business;
 
 import config.CommonConfig;
 
+import db.ArticleRepository;
 import db.Database;
 
+import db.UserRepository;
 import http.ContentType;
 import http.HttpStatus;
 import http.request.HttpRequest;
@@ -29,6 +31,8 @@ import java.util.UUID;
 
 public class ArticleBusiness {
     private static final Logger logger = LoggerFactory.getLogger(ArticleBusiness.class);
+    private final UserRepository userRepository = new UserRepository();
+    private final ArticleRepository articleRepository = new ArticleRepository();
 
     public HttpResponse createArticle(HttpRequest request) {
         try {
@@ -56,8 +60,7 @@ public class ArticleBusiness {
             }
 
             Article article = new Article(findUser.getUserId(), content, savedFileName);
-            Database.addArticle(article);
-
+            articleRepository.save(article);
             return HttpResponse.redirect(request, "/index.html");
         } catch (IOException e) {
             return HttpResponse.redirect(request, "/error/500.html");
@@ -67,13 +70,13 @@ public class ArticleBusiness {
     public HttpResponse getArticlePage(HttpRequest request) {
         try {
             String html = Files.readString(Path.of(CommonConfig.baseDirectory + "/index.html"));
-            Article article = Database.findLatest();
+            Article article = articleRepository.findLatest();
 
             if (article != null) {
                 String imgTagSrc = article.getImagePath() != null ? "/asset/" + article.getImagePath() : "";
                 html = html.replace("{{postImage}}", imgTagSrc);
                 html = html.replace("{{postContent}}", article.getContent());
-                User writer = Database.findUserById(article.getUserId());
+                User writer = userRepository.findByUserId(article.getUserId());
 
                 String writerName = "Unknown";
                 String writerImage = "./img/basic_profileImage.svg";
