@@ -13,6 +13,13 @@ public class Article {
         this.imagePath = imagePath;
     }
 
+    public Article(Long id, String userId, String content, String imagePath) {
+        this.id = id;
+        this.userId = userId;
+        this.content = content;
+        this.imagePath = imagePath;
+    }
+
     public String getImagePath() {
         return imagePath;
     }
