@@ -29,7 +29,6 @@ import java.util.UUID;
 
 public class ArticleBusiness {
     private static final Logger logger = LoggerFactory.getLogger(ArticleBusiness.class);
-    private static final String UPLOAD_DIR = CommonConfig.baseDirectory + "/asset";
 
     public HttpResponse createArticle(HttpRequest request) {
         try {
@@ -49,7 +48,7 @@ public class ArticleBusiness {
                 String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
                 savedFileName = UUID.randomUUID() + ext;
 
-                File dir = new File(UPLOAD_DIR);
+                File dir = new File(CommonConfig.UPLOAD_DIR);
                 File dest = new File(dir, savedFileName);
                 try (FileOutputStream fos = new FileOutputStream(dest)) {
                     fos.write(uploadedFile.getData());
@@ -71,12 +70,29 @@ public class ArticleBusiness {
             Article article = Database.findLatest();
 
             if (article != null) {
-                String imgTagSrc = article.getImagePath() != null ? article.getImagePath() : "";
-                html = html.replace("{{postImage}}", "/asset/" + imgTagSrc);
+                String imgTagSrc = article.getImagePath() != null ? "/asset/" + article.getImagePath() : "";
+                html = html.replace("{{postImage}}", imgTagSrc);
                 html = html.replace("{{postContent}}", article.getContent());
+                User writer = Database.findUserById(article.getUserId());
+
+                String writerName = "Unknown";
+                String writerImage = "./img/basic_profileImage.svg";
+
+                if (writer != null) {
+                    writerName = writer.getName();
+                    if (writer.getProfileImage() != null) {
+                        writerImage = writer.getProfileImage();
+                    }
+                }
+
+                html = html.replace("{{writerName}}", writerName);
+                html = html.replace("{{writerImage}}", writerImage);
+
             } else {
                 html = html.replace("{{postImage}}", "");
                 html = html.replace("{{postContent}}", "게시글이 없습니다.");
+                html = html.replace("{{writerName}}", "");
+                html = html.replace("{{writerImage}}", "./img/basic_profileImage.svg");
             }
 
             html = DhtmlUtil.applyDynamicHeader(html, request);
