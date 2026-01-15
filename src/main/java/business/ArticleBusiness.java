@@ -4,6 +4,8 @@ import config.CommonConfig;
 
 import db.Database;
 
+import http.ContentType;
+import http.HttpStatus;
 import http.request.HttpRequest;
 import http.request.MultiPartData;
 import http.response.HttpResponse;
@@ -14,11 +16,15 @@ import model.User;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.DhtmlUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
 
 public class ArticleBusiness {
@@ -32,7 +38,7 @@ public class ArticleBusiness {
             Image uploadedFile = data.getFile("image");
             String savedFileName = null;
 
-            User findUser = Database.findUserById(request.getSessionId());
+            User findUser = Database.findUserBySessionId(request.getSessionId());
 
             if (findUser == null) {
                 return HttpResponse.notFound(request);
@@ -54,6 +60,32 @@ public class ArticleBusiness {
             Database.addArticle(article);
 
             return HttpResponse.redirect(request, "/index.html");
+        } catch (IOException e) {
+            return HttpResponse.redirect(request, "/error/500.html");
+        }
+    }
+
+    public HttpResponse getArticlePage(HttpRequest request) {
+        try {
+            String html = Files.readString(Path.of(CommonConfig.baseDirectory + "/index.html"));
+            Article article = Database.findLatest();
+
+            if (article != null) {
+                String imgTagSrc = article.getImagePath() != null ? article.getImagePath() : "";
+                html = html.replace("{{postImage}}", "/asset/" + imgTagSrc);
+                html = html.replace("{{postContent}}", article.getContent());
+            } else {
+                html = html.replace("{{postImage}}", "");
+                html = html.replace("{{postContent}}", "게시글이 없습니다.");
+            }
+
+            html = DhtmlUtil.applyDynamicHeader(html, request);
+
+            return HttpResponse.builder(request)
+                    .status(HttpStatus.OK)
+                    .contentType(ContentType.HTML)
+                    .body(html.getBytes(StandardCharsets.UTF_8))
+                    .build();
         } catch (IOException e) {
             return HttpResponse.redirect(request, "/error/500.html");
         }
