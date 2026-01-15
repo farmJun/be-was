@@ -5,6 +5,7 @@ public class User {
     private String password;
     private String name;
     private String email;
+    private String profileImage;
 
     public User(String userId, String password, String name, String email) {
         this.userId = userId;
@@ -25,8 +26,24 @@ public class User {
         return name;
     }
 
-    public String getEmail() {
-        return email;
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 
     @Override
