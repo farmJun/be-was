@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import db.DatabaseInitializer;
+
 import http.request.RequestHandler;
 
 import org.slf4j.Logger;
@@ -22,6 +24,8 @@ public class WebServer {
         } else {
             port = Integer.parseInt(args[0]);
         }
+
+        DatabaseInitializer.init();
 
         // 일반적인 추천 스레드 개수 - CPU 코어 * 2
         ExecutorService executor = Executors.newFixedThreadPool(20);
