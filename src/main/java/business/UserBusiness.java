@@ -3,6 +3,7 @@ package business;
 import config.CommonConfig;
 import db.Database;
 
+import db.UserRepository;
 import http.ContentType;
 import http.HttpStatus;
 import http.request.HttpRequest;
@@ -30,6 +31,7 @@ import java.util.UUID;
 
 public class UserBusiness {
 
+    private final UserRepository userRepository = new UserRepository();
     private static final Logger logger = LoggerFactory.getLogger(UserBusiness.class);
 
     public HttpResponse signUp(HttpRequest httpRequest) {
@@ -40,7 +42,7 @@ public class UserBusiness {
         String email = body.get("email");
 
         User user = new User(userId, password, name, email);
-        Database.addUser(user);
+        userRepository.save(user);
 
         return HttpResponse.redirect(httpRequest, "/index.html");
     }
@@ -48,7 +50,7 @@ public class UserBusiness {
     public HttpResponse login(HttpRequest httpRequest) {
         Map<String, String> body = httpRequest.getForm();
 
-        User findUser = Database.findUserById(body.get("userId"));
+        User findUser = userRepository.findByUserId(body.get("userId"));
 
         try {
             if (findUser == null) {
@@ -74,7 +76,7 @@ public class UserBusiness {
 
         try {
             User user = Database.findUserBySessionId(request.getSessionId());
-            String html = Files.readString(Path.of("./src/main/resources/static/mypage/index.html")); // 경로 주의
+            String html = Files.readString(Path.of("./src/main/resources/static/mypage/index.html"));
 
             String profileImgSrc = (user.getProfileImage() != null) ? user.getProfileImage() : "../img/basic_profileImage.svg";
             html = html.replace("{{nickname}}", user.getName());
@@ -109,13 +111,9 @@ public class UserBusiness {
                 user.setPassword(newPassword);
             }
 
-            // 2) 이미지 파일 업데이트
             Image file = data.getFile("profileImage");
             if (file != null && file.getFileName() != null && !file.getFileName().isEmpty()) {
-                // 저장 디렉토리 생성
                 File dir = new File(CommonConfig.UPLOAD_DIR);
-
-                // 파일 저장
                 String ext = file.getFileName().substring(file.getFileName().lastIndexOf("."));
                 String savedFileName = UUID.randomUUID() + ext;
                 File dest = new File(dir, savedFileName);
@@ -126,6 +124,7 @@ public class UserBusiness {
 
                 user.setProfileImage("/asset/" + savedFileName);
             }
+            userRepository.update(user);
 
             return HttpResponse.redirect(request, "/mypage/index.html");
         } catch (IOException e) {
